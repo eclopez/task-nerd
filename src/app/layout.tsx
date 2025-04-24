@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
+import { Header } from '@/components/Header';
 
 import './global.css';
 
@@ -21,7 +22,10 @@ function RootLayout(props: React.PropsWithChildren) {
 
   return (
     <html lang="en" className={`${montserrat.variable}`}>
-      <body>{children}</body>
+      <body>
+        <Header></Header>
+        {children}
+      </body>
     </html>
   );
 }
