@@ -1,0 +1,6 @@
+{
+  "name": "task-nerd",
+  "version": "1.0.0",
+  "description": "Task tracking with Next.js 15, React 19, and Tailwind 4",
+  "author": "Erik Lopez"
+}
