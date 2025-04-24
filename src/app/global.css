@@ -1,1 +1,35 @@
 @import 'tailwindcss';
+
+@theme {
+  --color-primary-100: oklch(0.77 0.1877 129.65);
+  --color-primary-500: oklch(0.66 0.1826 149.28);
+  --color-primary-900: oklch(0.45 0.125365 149.7026);
+
+  --color-secondary-500: oklch(0.56 0.1355 243.22);
+  --color-secondary-550: oklch(0.54 0.1306 243.19);
+
+  --text-caption: 0.625rem;
+  --text-caption--line-height: 0.875rem;
+  --text-body-sm: 0.75rem;
+  --text-body-sm--line-height: 1.125rem;
+  --text-body-sm-compact: 0.75rem;
+  --text-body-sm-compact--line-height: 1rem;
+  --text-body-md: 0.875rem;
+  --text-body-md--line-height: 1.25rem;
+  --text-body-md-compact: 0.875rem;
+  --text-body-md-compact--line-height: 1.125rem;
+  --text-body-lg: 1rem;
+  --text-body-lg--line-height: 1.5rem;
+  --text-body-lg-compact: 1rem;
+  --text-body-lg-compact--line-height: 1.25rem;
+  --text-heading-1: 2rem;
+  --text-heading-1--line-height: 2.5rem;
+  --text-heading-2: 1.5rem;
+  --text-heading-2--line-height: 2rem;
+  --text-heading-3: 1.25rem;
+  --text-heading-3--line-height: 1.875rem;
+  --text-heading-4: 1.125rem;
+  --text-heading-4--line-height: 1.75rem;
+
+  --font-sans: var(--font-montserrat);
+}
