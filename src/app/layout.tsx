@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Metadata } from 'next';
 
+import './global.css';
+
 const metadata: Metadata = {
   title: 'Task Nerd',
   description: `Task Nerd manages your tasks so you don't have to.`,
