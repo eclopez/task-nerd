@@ -65,29 +65,6 @@ jest.mock('../../hooks/useTaskData', () => ({
 }));
 
 describe('TasksTable', () => {
-  const defaultProps = {
-    tasks: [
-      {
-        id: '1',
-        title: 'Task 1',
-        description: 'Description 1',
-        status: 'Pending',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: '2',
-        title: 'Task 2',
-        description: 'Description 2',
-        status: 'Completed',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ],
-    onEditTask: jest.fn(),
-    onDeleteTask: jest.fn(),
-  };
-
   it('renders the table with tasks', () => {
     render(<TasksTable />);
 

@@ -54,4 +54,4 @@ I chose to implement hooks as the interface that the components interact with to
 
 ### Improvements
 
-As far as improvements that can be made, more testing can be added, including for the actions and the hooks which would require effective mocking of Prisma.
+As far as improvements that can be made, more testing can be added, including for the actions and the hooks which would require effective mocking of Prisma. Additionally, after adding or editing a task and navigating back to the task list, a cache could be implemented so that the task list serves up stale data while the new data is fetched, making the page seem more responsive, instead of the current behavior of the entire list loading again.

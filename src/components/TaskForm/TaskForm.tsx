@@ -59,7 +59,7 @@ function TaskForm(props: TaskFormProps): React.JSX.Element {
         await addTask(newTitle, newDescription, Number(newPriorityId));
       }
       router.push('/');
-    } catch (error) {
+    } catch {
       setErrorOpen(true);
     }
   };

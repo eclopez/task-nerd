@@ -24,6 +24,7 @@ function EditTaskPage(props: EditTaskPageProps) {
     };
 
     fetchTask();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
