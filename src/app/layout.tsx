@@ -24,7 +24,7 @@ function RootLayout(props: React.PropsWithChildren) {
 
   return (
     <html lang="en" className={`${montserrat.variable}`}>
-      <body>
+      <body className="px-5">
         <ThemeProvider theme={theme}>
           <Header />
           {children}
