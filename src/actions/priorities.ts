@@ -2,8 +2,8 @@
 
 import prisma from '@/lib/prisma';
 
-async function getAllPriorities() {
+async function findAllPriorities() {
   return await prisma.priority.findMany();
 }
 
-export { getAllPriorities };
+export { findAllPriorities };

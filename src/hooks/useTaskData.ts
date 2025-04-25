@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {
   deleteTask,
-  getAllPriorities,
-  getAllTasks,
+  findAllPriorities,
+  findAllTasks,
   updateTaskCompletion,
   updateTaskPriority,
 } from '@/src/actions';
@@ -21,8 +21,8 @@ const useTaskData = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const fetchedTasks = await getAllTasks();
-      const fetchedPriorities = await getAllPriorities();
+      const fetchedTasks = await findAllTasks();
+      const fetchedPriorities = await findAllPriorities();
 
       setTasks(fetchedTasks);
       setPriorities(fetchedPriorities);

@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/prisma';
+import type { Task } from '@/prisma/generated/prisma';
 
 async function deleteTask(id: number) {
   await prisma.task.delete({
@@ -8,7 +9,7 @@ async function deleteTask(id: number) {
   });
 }
 
-async function getAllTasks(
+async function findAllTasks(
   sortField: string = 'id',
   sortOrder: 'asc' | 'desc' = 'asc',
 ) {
@@ -19,6 +20,19 @@ async function getAllTasks(
     orderBy: {
       [sortField]: sortOrder,
     },
+  });
+}
+
+async function findTask(id: number) {
+  return await prisma.task.findUnique({
+    where: { id },
+  });
+}
+
+async function updateTask(id: number, data: Partial<Task>) {
+  await prisma.task.update({
+    where: { id },
+    data: { ...data, updatedAt: new Date() },
   });
 }
 
@@ -36,4 +50,27 @@ async function updateTaskCompletion(id: number, completed: boolean) {
   });
 }
 
-export { deleteTask, getAllTasks, updateTaskPriority, updateTaskCompletion };
+async function createTask(
+  title: string,
+  description: string,
+  priorityId: number,
+) {
+  await prisma.task.create({
+    data: {
+      title,
+      description,
+      priorityId,
+      createdAt: new Date(),
+    },
+  });
+}
+
+export {
+  createTask,
+  deleteTask,
+  findAllTasks,
+  findTask,
+  updateTask,
+  updateTaskPriority,
+  updateTaskCompletion,
+};
