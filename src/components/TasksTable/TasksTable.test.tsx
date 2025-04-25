@@ -4,6 +4,12 @@ import { TasksTable } from './TasksTable';
 
 const mockSetTaskCompleted = jest.fn();
 
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+  })),
+}));
+
 jest.mock('../../hooks/useTaskData', () => ({
   useTaskData: jest.fn(() => ({
     error: null,

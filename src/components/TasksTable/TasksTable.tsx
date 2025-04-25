@@ -1,8 +1,16 @@
 'use client';
 
 import * as React from 'react';
-import { DeleteForever, Edit } from '@mui/icons-material';
+import { useRouter } from 'next/navigation';
 import {
+  DeleteForever,
+  Edit,
+  SignalCellularAlt,
+  SignalCellularAlt1Bar,
+  SignalCellularAlt2Bar,
+} from '@mui/icons-material';
+import {
+  Button,
   Checkbox,
   IconButton,
   MenuItem,
@@ -31,9 +39,16 @@ function StrikethroughText({
   return <span className={`${isComplete && 'line-through'}`}>{text}</span>;
 }
 
-function TasksTable() {
+/**
+ * A table component that displays a list of tasks.
+ *
+ * @returns {React.JSX.Element}
+ */
+function TasksTable(): React.JSX.Element {
+  const router = useRouter();
   const {
     error,
+    isLoading,
     tasks,
     priorities,
     removeTask,
@@ -66,8 +81,6 @@ function TasksTable() {
     removeTask(pendingDelete.id);
     handleCloseDialog();
   };
-
-  const handleEditTask = (id: number) => {};
 
   return (
     <div className="sm:px-12">
@@ -138,10 +151,28 @@ function TasksTable() {
                         }}
                         align="left"
                       >
-                        <StrikethroughText
-                          text={task.title}
-                          isComplete={task.completedAt !== null}
-                        />
+                        <div className="flex flex-row items-center gap-2">
+                          {task.priority.value <= 1000 && (
+                            <SignalCellularAlt1Bar
+                              color="primary"
+                              fontSize="small"
+                            />
+                          )}
+                          {task.priority.value <= 5000 &&
+                            task.priority.value > 1000 && (
+                              <SignalCellularAlt2Bar
+                                color="warning"
+                                fontSize="small"
+                              />
+                            )}
+                          {task.priority.value > 5000 && (
+                            <SignalCellularAlt color="error" fontSize="small" />
+                          )}
+                          <StrikethroughText
+                            text={task.title}
+                            isComplete={task.completedAt !== null}
+                          />
+                        </div>
                       </TableCell>
                       <TableCell
                         sx={{
@@ -201,7 +232,7 @@ function TasksTable() {
                       >
                         <IconButton
                           disabled={task.completedAt !== null}
-                          onClick={() => handleEditTask(task.id)}
+                          onClick={() => router.push('/task/' + task.id)}
                           aria-label="Edit task"
                         >
                           <Edit color="primary" />
@@ -217,24 +248,52 @@ function TasksTable() {
                   ))}
                 </>
               ) : (
-                [...Array(10)].map((_, index) => (
-                  <TableRow key={index} sx={{ padding: 0 }}>
-                    <TableCell
-                      colSpan={6}
-                      sx={{
-                        padding: 0,
-                        width: '100%',
-                        height: '42px',
-                      }}
-                      align="center"
-                    >
-                      <Skeleton
-                        variant="rectangular"
-                        sx={{ height: '100%', width: '100%' }}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
+                <>
+                  {isLoading ? (
+                    [...Array(14)].map((_, index) => (
+                      <TableRow key={index} sx={{ padding: 0 }}>
+                        <TableCell
+                          colSpan={6}
+                          sx={{
+                            padding: 0,
+                            width: '100%',
+                            height: '42px',
+                          }}
+                          align="center"
+                        >
+                          <Skeleton
+                            variant="rectangular"
+                            sx={{ height: '100%', width: '100%' }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        sx={{
+                          padding: 0,
+                          width: '100%',
+                          height: '595px',
+                        }}
+                        align="center"
+                      >
+                        <div className="inline-flex flex-col gap-3">
+                          No tasks found.
+                          <Button
+                            variant="text"
+                            color="secondary"
+                            onClick={() => router.push('/task')}
+                            className="mt-4"
+                          >
+                            Create a new task
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               )}
             </TableBody>
           </Table>
