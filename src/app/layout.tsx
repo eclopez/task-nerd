@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
+import { ThemeProvider } from '@mui/material/styles';
 import { Header } from '@/components/Header';
+import { theme } from '@/styles/theme';
 
-import './global.css';
+import '@/styles/global.css';
 
 const metadata: Metadata = {
   title: 'Task Nerd',
@@ -23,8 +25,10 @@ function RootLayout(props: React.PropsWithChildren) {
   return (
     <html lang="en" className={`${montserrat.variable}`}>
       <body>
-        <Header></Header>
-        {children}
+        <ThemeProvider theme={theme}>
+          <Header />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
