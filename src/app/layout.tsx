@@ -36,3 +36,4 @@ function RootLayout(props: React.PropsWithChildren) {
 
 export default RootLayout;
 export { metadata };
+export const dynamic = 'force-dynamic';
