@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { TaskForm } from './TaskForm';
 
 const mockAddTask = jest.fn();
@@ -32,32 +32,28 @@ jest.mock('../../hooks/useTaskForm', () => ({
     ],
     addTask: mockAddTask,
     editTask: jest.fn(),
-    getTask: jest.fn(),
+    getTask: jest.fn().mockResolvedValue({
+      title: 'Test Task',
+      description: 'Test Description',
+      priorityId: 1,
+    }),
   })),
 }));
 
 describe('TaskForm', () => {
-  it('renders the form with correct initial values for edit mode', () => {
-    const task = {
-      id: 1,
-      title: 'Test Task',
-      description: 'Test Description',
-      priorityId: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      completedAt: null,
-    };
+  it('renders the form with correct initial values for edit mode', async () => {
+    render(<TaskForm id={1} />);
 
-    render(<TaskForm task={task} mode="edit" />);
-
-    expect(screen.getByLabelText(/title/i)).toHaveValue('Test Task');
-    expect(screen.getByLabelText(/description/i)).toHaveValue(
-      'Test Description',
-    );
+    await waitFor(() => {
+      expect(screen.getByLabelText(/title/i)).toHaveValue('Test Task');
+      expect(screen.getByLabelText(/description/i)).toHaveValue(
+        'Test Description',
+      );
+    });
   });
 
   it('renders the form with empty values for add mode', () => {
-    render(<TaskForm mode="add" />);
+    render(<TaskForm />);
 
     expect(screen.getByLabelText(/title/i)).toHaveValue('');
     expect(screen.getByLabelText(/description/i)).toHaveValue('');

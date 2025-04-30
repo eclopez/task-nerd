@@ -1,5 +1,3 @@
-'use client';
-
 import { TaskForm } from '@/src/components/TaskForm';
 
 function NewTaskPage() {
@@ -8,7 +6,7 @@ function NewTaskPage() {
       <h2 className="text-heading-1 text-primary-500 mb-6 font-semibold">
         Add new task
       </h2>
-      <TaskForm mode="add" />
+      <TaskForm />
     </div>
   );
 }
