@@ -2,25 +2,39 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, MenuItem, TextField } from '@mui/material';
-import { Task } from '@/prisma/generated/prisma';
-import { useTaskForm } from '@/src/hooks/useTaskForm';
-import { ErrorSnack } from '../ErrorSnack';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  MenuItem,
+  TextField,
+} from '@mui/material';
+import { Priority, Task } from '@/prisma/generated/prisma';
+import { createTask, updateTask } from '@/src/actions';
+import { ErrorSnack } from '@/components/ErrorSnack';
 
 interface TaskFormProps {
   /**
-   * The task to edit. If not provided, a new task will be created.
+   * Whether the form is loading or not
    *
-   * @type {Task | undefined}
+   * @type {boolean}
+   * @optional
+   */
+  isLoading?: boolean;
+  /**
+   * The priorities to be displayed in the form
+   *
+   * @type {Priority[]}
+   * @required
+   */
+  priorities: Priority[];
+  /**
+   * The task to be edited
+   *
+   * @type {Task}
    * @optional
    */
   task?: Task;
-  /**
-   * The mode of the form. Can be either 'add' or 'edit'.
-   *
-   * @type {'add' | 'edit'}
-   */
-  mode: 'add' | 'edit';
 }
 
 /**
@@ -31,44 +45,60 @@ interface TaskFormProps {
  */
 function TaskForm(props: TaskFormProps): React.JSX.Element {
   const router = useRouter();
+  const { isLoading, priorities, task } = props;
 
-  const { task, mode } = props;
-
-  const { error, isLoading, priorities, addTask, editTask } = useTaskForm();
-
-  const [newTitle, setNewTitle] = React.useState<string>(task?.title ?? '');
-  const [newDescription, setNewDescription] = React.useState<string>(
-    task?.description ?? '',
-  );
-  const [newPriorityId, setNewPriorityId] = React.useState<number | ''>(
-    task?.priorityId ?? '',
-  );
+  const [formData, setFormData] = React.useState<Partial<Task> | null>({
+    title: task?.title ?? '',
+    description: task?.description ?? '',
+    priorityId: Number(task?.priorityId) ?? 0,
+  });
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorOpen, setErrorOpen] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    // If a task is provided, set the form data to the task's data
+    if (task) {
+      setFormData({
+        title: task.title,
+        description: task.description,
+        priorityId: Number(task.priorityId),
+      });
+    }
+  }, [task]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      if (mode === 'edit') {
-        await editTask(
-          task.id,
-          newTitle,
-          newDescription,
-          Number(newPriorityId),
-        );
+      if (task?.id) {
+        await updateTask(task.id, {
+          title: formData?.title,
+          description: formData?.description,
+          priorityId: formData?.priorityId,
+        });
       } else {
-        await addTask(newTitle, newDescription, Number(newPriorityId));
+        await createTask(
+          formData.title,
+          formData.description,
+          formData.priorityId,
+        );
       }
       router.push('/');
     } catch {
       setErrorOpen(true);
+      setIsSubmitting(false);
     }
   };
 
-  React.useEffect(() => {
-    if (error) {
-      setErrorOpen(true);
-    }
-  }, [error]);
+  const handleChange =
+    (field: keyof typeof formData) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: event.target.value,
+      }));
+    };
 
   return (
     <Box
@@ -77,59 +107,65 @@ function TaskForm(props: TaskFormProps): React.JSX.Element {
       autoComplete="off"
       onSubmit={handleSubmit}
     >
-      <TextField
-        label="Title"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={newTitle}
-        required
-        onChange={(event) => setNewTitle(event.target.value)}
-      />
-      <TextField
-        label="Description"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={newDescription}
-        onChange={(event) => setNewDescription(event.target.value)}
-      />
-      <TextField
-        label="Priority"
-        variant="outlined"
-        select
-        fullWidth
-        margin="normal"
-        value={newPriorityId}
-        required
-        onChange={(event) => setNewPriorityId(Number(event.target.value))}
-        disabled={isLoading}
-      >
-        {priorities?.map((priority) => (
-          <MenuItem key={priority.id} value={priority.id}>
-            {priority.name}
-          </MenuItem>
-        ))}
-      </TextField>
-      <div className="mt-6 flex flex-row justify-end gap-8">
-        <Button
-          variant="text"
-          color="secondary"
-          onClick={() => router.push('/')}
-        >
-          Back
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          loading={isLoading}
-          loadingIndicator="Loading..."
-        >
-          {mode} Task
-        </Button>
-      </div>
-      <ErrorSnack open={errorOpen} onClose={() => {}} />
+      {isSubmitting ? (
+        <CircularProgress />
+      ) : (
+        <>
+          <TextField
+            label="Title"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={formData.title}
+            required
+            onChange={handleChange('title')}
+          />
+          <TextField
+            label="Description"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={formData.description}
+            onChange={handleChange('description')}
+          />
+          <TextField
+            label="Priority"
+            variant="outlined"
+            select
+            fullWidth
+            margin="normal"
+            value={!formData.priorityId ? '' : formData.priorityId} // Treat a falsy value (in this case 0) as empty
+            required
+            onChange={handleChange('priorityId')}
+            disabled={isLoading}
+          >
+            {priorities?.map((priority) => (
+              <MenuItem key={priority.id} value={priority.id}>
+                {priority.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <div className="mt-6 flex flex-row justify-end gap-8">
+            <Button
+              variant="text"
+              color="secondary"
+              onClick={() => router.push('/')}
+            >
+              Back
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              loading={isLoading}
+              loadingIndicator="Loading..."
+            >
+              {task?.id ? 'Edit' : 'Add'} Task
+            </Button>
+          </div>
+        </>
+      )}
+      <ErrorSnack open={errorOpen} onClose={() => setErrorOpen(false)} />
     </Box>
   );
 }

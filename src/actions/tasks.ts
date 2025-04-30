@@ -43,7 +43,7 @@ async function updateTaskPriority(id: number, priorityId: number) {
   });
 }
 
-async function updateTaskCompletion(id: number, completed: boolean) {
+async function completeTask(id: number, completed: boolean) {
   await prisma.task.update({
     where: { id },
     data: { completedAt: completed ? new Date() : null },
@@ -72,5 +72,5 @@ export {
   findTask,
   updateTask,
   updateTaskPriority,
-  updateTaskCompletion,
+  completeTask,
 };

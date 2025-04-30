@@ -1,9 +1,7 @@
-'use client';
-
 import * as React from 'react';
-import { Task } from '@/prisma/generated/prisma';
+import { CircularProgress } from '@mui/material';
+import { findAllPriorities, findTask } from '@/src/actions';
 import { TaskForm } from '@/src/components/TaskForm';
-import { useTaskForm } from '@/src/hooks/useTaskForm';
 
 interface EditTaskPageProps {
   params: Promise<{
@@ -13,30 +11,18 @@ interface EditTaskPageProps {
 
 function EditTaskPage(props: EditTaskPageProps) {
   const { id } = React.use(props.params);
-  const { getTask } = useTaskForm();
 
-  const [task, setTask] = React.useState<Task | null>(null);
-
-  React.useEffect(() => {
-    const fetchTask = async () => {
-      const task: Task = await getTask(Number(id));
-      setTask(task);
-    };
-
-    fetchTask();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const priorities = React.use(findAllPriorities());
+  const task = React.use(findTask(Number(id)));
 
   return (
     <div className="flex flex-col items-center">
       <h2 className="text-heading-1 text-primary-500 mb-6 font-semibold">
         Edit task
       </h2>
-      {task ? (
-        <TaskForm task={task} mode="edit"></TaskForm>
-      ) : (
-        <div>Loading...</div>
-      )}
+      <React.Suspense fallback={<CircularProgress />}>
+        <TaskForm task={task} priorities={priorities} />
+      </React.Suspense>
     </div>
   );
 }
