@@ -2,19 +2,39 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, MenuItem, TextField } from '@mui/material';
-import { Task } from '@/prisma/generated/prisma';
-import { useTaskForm } from '@/src/hooks/useTaskForm';
-import { ErrorSnack } from '../ErrorSnack';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  MenuItem,
+  TextField,
+} from '@mui/material';
+import { Priority, Task } from '@/prisma/generated/prisma';
+import { createTask, updateTask } from '@/src/actions';
+import { ErrorSnack } from '@/components/ErrorSnack';
 
 interface TaskFormProps {
   /**
-   * The id of the task.
+   * Whether the form is loading or not
    *
-   * @type {number}
+   * @type {boolean}
    * @optional
    */
-  id?: number;
+  isLoading?: boolean;
+  /**
+   * The priorities to be displayed in the form
+   *
+   * @type {Priority[]}
+   * @required
+   */
+  priorities: Priority[];
+  /**
+   * The task to be edited
+   *
+   * @type {Task}
+   * @optional
+   */
+  task?: Task;
 }
 
 /**
@@ -25,48 +45,60 @@ interface TaskFormProps {
  */
 function TaskForm(props: TaskFormProps): React.JSX.Element {
   const router = useRouter();
-  const { id } = props;
+  const { isLoading, priorities, task } = props;
 
-  const [newTitle, setNewTitle] = React.useState<string>('');
-  const [newDescription, setNewDescription] = React.useState<string>('');
-  const [newPriorityId, setNewPriorityId] = React.useState<number | ''>('');
+  const [formData, setFormData] = React.useState<Partial<Task> | null>({
+    title: task?.title ?? '',
+    description: task?.description ?? '',
+    priorityId: Number(task?.priorityId) ?? 0,
+  });
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorOpen, setErrorOpen] = React.useState<boolean>(false);
 
-  const { error, isLoading, priorities, addTask, editTask, getTask } =
-    useTaskForm();
-
   React.useEffect(() => {
-    const fetchTask = async () => {
-      if (!id) return;
-
-      const task: Task = await getTask(id);
-      setNewTitle(task.title);
-      setNewDescription(task.description);
-      setNewPriorityId(task.priorityId);
-    };
-
-    fetchTask();
-  }, [id, getTask]);
-
-  React.useEffect(() => {
-    if (error) {
-      setErrorOpen(true);
+    // If a task is provided, set the form data to the task's data
+    if (task) {
+      setFormData({
+        title: task.title,
+        description: task.description,
+        priorityId: Number(task.priorityId),
+      });
     }
-  }, [error]);
+  }, [task]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      if (id) {
-        await editTask(id, newTitle, newDescription, Number(newPriorityId));
+      if (task?.id) {
+        await updateTask(task.id, {
+          title: formData?.title,
+          description: formData?.description,
+          priorityId: formData?.priorityId,
+        });
       } else {
-        await addTask(newTitle, newDescription, Number(newPriorityId));
+        await createTask(
+          formData.title,
+          formData.description,
+          formData.priorityId,
+        );
       }
       router.push('/');
     } catch {
       setErrorOpen(true);
+      setIsSubmitting(false);
     }
   };
+
+  const handleChange =
+    (field: keyof typeof formData) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: event.target.value,
+      }));
+    };
 
   return (
     <Box
@@ -75,8 +107,8 @@ function TaskForm(props: TaskFormProps): React.JSX.Element {
       autoComplete="off"
       onSubmit={handleSubmit}
     >
-      {isLoading ? (
-        <p>Loading...</p>
+      {isSubmitting ? (
+        <CircularProgress />
       ) : (
         <>
           <TextField
@@ -84,17 +116,17 @@ function TaskForm(props: TaskFormProps): React.JSX.Element {
             variant="outlined"
             fullWidth
             margin="normal"
-            value={newTitle}
+            value={formData.title}
             required
-            onChange={(event) => setNewTitle(event.target.value)}
+            onChange={handleChange('title')}
           />
           <TextField
             label="Description"
             variant="outlined"
             fullWidth
             margin="normal"
-            value={newDescription}
-            onChange={(event) => setNewDescription(event.target.value)}
+            value={formData.description}
+            onChange={handleChange('description')}
           />
           <TextField
             label="Priority"
@@ -102,9 +134,9 @@ function TaskForm(props: TaskFormProps): React.JSX.Element {
             select
             fullWidth
             margin="normal"
-            value={newPriorityId}
+            value={!formData.priorityId ? '' : formData.priorityId} // Treat a falsy value (in this case 0) as empty
             required
-            onChange={(event) => setNewPriorityId(Number(event.target.value))}
+            onChange={handleChange('priorityId')}
             disabled={isLoading}
           >
             {priorities?.map((priority) => (
@@ -128,12 +160,12 @@ function TaskForm(props: TaskFormProps): React.JSX.Element {
               loading={isLoading}
               loadingIndicator="Loading..."
             >
-              {id ? 'Edit' : 'Add'} Task
+              {task?.id ? 'Edit' : 'Add'} Task
             </Button>
           </div>
         </>
       )}
-      <ErrorSnack open={errorOpen} onClose={() => {}} />
+      <ErrorSnack open={errorOpen} onClose={() => setErrorOpen(false)} />
     </Box>
   );
 }
